@@ -24,20 +24,54 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             LayoutsCodelabTheme {
-                PhotographerCard()
+
             }
         }
     }
 }
 
 @Composable
+fun LayoutsCodelab() {
+    Scaffold (
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "LayoutsCodelab")
+                }
+            )
+        }
+    ) { innerPadding ->
+        BodyContent(Modifier.padding(innerPadding).padding(8.dp))
+    }
+}
+
+
+@Composable
+fun BodyContent(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.padding(8.dp)) {
+        Text(text = "Hi there!")
+        Text(text = "Thanks for going through the Layouts codelab")
+    }
+}
+
+@Preview
+@Composable
+fun LayoutsCodelabPreview() {
+    LayoutsCodelabTheme {
+        LayoutsCodelab()
+    }
+}
+
+
+@Composable
 fun PhotographerCard(modifier: Modifier = Modifier) {
-    Row (modifier
-        .padding(8.dp)
-        .clip(RoundedCornerShape(4.dp))
-        .background(MaterialTheme.colors.surface)
-        .clickable(onClick = { /* Ignoring onClick */ })
-        .padding(16.dp)
+    Row (
+        modifier
+            .padding(8.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colors.surface)
+            .clickable(onClick = { /* Ignoring onClick */ })
+            .padding(16.dp)
     ) {
         Surface(
             modifier = Modifier.size(50.dp),
@@ -56,13 +90,5 @@ fun PhotographerCard(modifier: Modifier = Modifier) {
                 Text("3 minutes ago", style = MaterialTheme.typography.body2)
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun PhotographerCardPreview() {
-    LayoutsCodelabTheme {
-        PhotographerCard()
     }
 }
