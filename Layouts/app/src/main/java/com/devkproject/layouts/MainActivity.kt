@@ -171,24 +171,6 @@ fun ScrollingList() {
     }
 }
 
-@Composable
-fun LayoutsCodelab() {
-    Scaffold (
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "LayoutsCodelab")
-                }
-            )
-        }
-    ) { innerPadding ->
-        BodyContent(
-            Modifier
-                .padding(innerPadding)
-                .padding(8.dp))
-    }
-}
-
 
 @Composable
 fun BodyContent(modifier: Modifier = Modifier) {
