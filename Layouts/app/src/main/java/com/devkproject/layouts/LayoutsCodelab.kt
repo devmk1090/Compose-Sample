@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -30,6 +33,11 @@ fun LayoutsCodelab() {
             TopAppBar(
                 title = {
                     Text(text = "LayoutsCodelab")
+                },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(Icons.Filled.Favorite, contentDescription = null)
+                    }
                 }
             )
         }
@@ -40,8 +48,14 @@ fun LayoutsCodelab() {
 
 @Composable
 fun BodyContents(modifier: Modifier = Modifier) {
-    Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
-        StaggeredGrid(modifier = modifier, rows = 5) {
+    Row(
+        modifier = modifier
+            .background(color = Color.LightGray)
+            .padding(16.dp)
+            .size(200.dp)
+            .horizontalScroll(rememberScrollState())
+    ) {
+        StaggeredGrid {
             for (topic in topics) {
                 Chip(modifier = Modifier.padding(8.dp), text = topic)
             }
@@ -59,13 +73,17 @@ fun StaggeredGrid(
         modifier = modifier,
         content = content
     ) { measurables, constraints ->
+        //주어진 제약조건을 사용하여 측정하고 배치한다.
 
+        //각 행에 대한 너비 추적
         val rowWidths = IntArray(rows) { 0 }
 
+        //각 행에 대한 최대 높이 추적
         val rowHeights = IntArray(rows) { 0 }
 
+        //하위 view들을 제한하지 않고, 주어진 제약조건들과 함께 측정한다.
         val placeables = measurables.mapIndexed { index, measurable ->
-            //Measure each child
+            //각각의 하위 요소를 측정
             val placeable = measurable.measure(constraints)
 
             //Track the width and max height of each row
@@ -75,24 +93,23 @@ fun StaggeredGrid(
 
             placeable
         }
-        //Grid's width is the widest row
+        //그리드의 너비는 가장 넓은 행이다.
         val width = rowWidths.maxOrNull()
             ?.coerceIn(constraints.minWidth.rangeTo(constraints.maxHeight)) ?: constraints.minWidth
 
-        //Grid's height is the sum of the tallest element of each row
-        //coerced to the height constraints
+        //그리드의 높이는 높이 제약조건으로 인해 강제로 변환된 각 행의 가장 높은 요소의 합이다.
         val height = rowHeights.sumOf { it }
             .coerceIn(constraints.minHeight.rangeTo(constraints.maxHeight))
 
-        //Y of each row, based on the height accumulation of previous rows
+        //이전 행들의 누적된 높이를 기반한 각 행의 Y
         val rowY = IntArray(rows) { 0 }
         for (i in 1 until rows) {
             rowY[i] = rowY[i - 1] + rowHeights[i - 1]
         }
 
-        //Set the size of the parent layout
+        //상위 레이아웃의 사이즈를 설정
         layout(width, height) {
-            //x cord we have placed up to, per row
+            //각 행마다 배치해야 할 x좌표
             val rowX = IntArray(rows) { 0 }
 
             placeables.forEachIndexed { index, placeable ->
