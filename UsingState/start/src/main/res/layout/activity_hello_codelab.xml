@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:textAppearance="?textAppearanceHeadline6" />
+        />
 
     <EditText
         android:id="@+id/text_input"
