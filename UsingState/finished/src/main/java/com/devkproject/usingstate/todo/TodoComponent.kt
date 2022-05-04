@@ -1,24 +1,135 @@
 package com.devkproject.usingstate.todo
 
-import androidx.compose.animation.animateContentSize
+import androidx.annotation.StringRes
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
+/**
+ * Draws a row of [TodoIcon] with visibility changes animated.
+ *
+ * When not visible, will collapse to 16.dp high by default. You can enlarge this with the passed
+ * modifier.
+ *
+ * @param icon (state) the current selected icon
+ * @param onIconChange (event) request the selected icon change
+ * @param modifier modifier for this element
+ * @param visible (state) if the icon should be shown
+ */
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun AnimatedIconRow(
+    icon: TodoIcon,
+    onIconChange: (TodoIcon) -> Unit,
+    modifier: Modifier = Modifier,
+    visible: Boolean = true,
+) {
+    // remember these specs so they don't restart if recomposing during the animation
+    // this is required since TweenSpec restarts on interruption
+    val enter = remember { fadeIn(animationSpec = TweenSpec(300, easing = FastOutLinearInEasing)) }
+    val exit = remember { fadeOut(animationSpec = TweenSpec(100, easing = FastOutSlowInEasing)) }
+    Box(modifier.defaultMinSize(minHeight = 16.dp)) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = enter,
+            exit = exit,
+        ) {
+            IconRow(icon, onIconChange)
+        }
+    }
+}
+
+/**
+ * Displays a row of selectable [TodoIcon]
+ *
+ * @param icon (state) the current selected icon
+ * @param onIconChange (event) request the selected icon change
+ * @param modifier modifier for this element
+ */
+@Composable
+fun IconRow(
+    icon: TodoIcon,
+    onIconChange: (TodoIcon) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier) {
+        for (todoIcon in TodoIcon.values()) {
+            SelectableIconButton(
+                icon = todoIcon.imageVector,
+                iconContentDescription = todoIcon.contentDescription,
+                onIconSelected = { onIconChange(todoIcon) },
+                isSelected = todoIcon == icon
+            )
+        }
+    }
+}
+
+/**
+ * Displays a single icon that can be selected.
+ *
+ * @param icon the icon to draw
+ * @param onIconSelected (event) request this icon be selected
+ * @param isSelected (state) selection state
+ * @param modifier modifier for this element
+ */
+@Composable
+private fun SelectableIconButton(
+    icon: ImageVector,
+    @StringRes iconContentDescription: Int,
+    onIconSelected: () -> Unit,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val tint = if (isSelected) {
+        MaterialTheme.colors.primary
+    } else {
+        MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+    }
+    TextButton(
+        onClick = { onIconSelected() },
+        shape = CircleShape,
+        modifier = modifier
+    ) {
+        Column {
+            Icon(
+                imageVector = icon,
+                tint = tint,
+                contentDescription = stringResource(id = iconContentDescription)
+            )
+            if (isSelected) {
+                Box(
+                    Modifier
+                        .padding(top = 3.dp)
+                        .width(icon.defaultWidth)
+                        .height(1.dp)
+                        .background(tint)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    }
+}
 
 /**
  * Draw a background based on [MaterialTheme.colors.onSurface] that animates resizing and elevation
