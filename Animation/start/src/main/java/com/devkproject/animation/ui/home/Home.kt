@@ -382,7 +382,7 @@ private fun HomeTabIndicator(
     val indicatorRight = tabPosition[tabPage.ordinal].right
     val color = if (tabPage == TabPage.Home) Purple700 else Green800
     Box(
-        androidx.compose.ui.Modifier
+        Modifier
             .fillMaxSize()
             .wrapContentSize(align = Alignment.BottomStart)
             .offset(x = indicatorLeft)
