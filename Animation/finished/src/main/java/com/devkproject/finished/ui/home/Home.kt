@@ -3,34 +3,48 @@ package com.devkproject.finished.ui.home
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.consumePositionChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.devkproject.finished.R
-import com.devkproject.finished.ui.Green300
-import com.devkproject.finished.ui.Green800
-import com.devkproject.finished.ui.Purple100
-import com.devkproject.finished.ui.Purple700
+import com.devkproject.finished.ui.*
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 private enum class TabPage {
     Home, Work
@@ -110,7 +124,67 @@ fun Home() {
             )
         }
     ) {
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 32.dp),
+            state = lazyListState
+        ) {
+            // Weather
+            item { Header(title = stringResource(R.string.weather)) }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = 2.dp
+                ) {
+                    if (weatherLoading) {
+                        LoadingRow()
+                    } else {
+                        WeatherRow(onRefresh = {
+                            coroutineScope.launch {
+                                loadWeather()
+                            }
+                        })
+                    }
+                }
+            }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
 
+            // Topics
+            item { Header(title = stringResource(R.string.topics)) }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+            items(allTopics) { topic ->
+                TopicRow(
+                    topic = topic,
+                    expanded = expandedTopic == topic,
+                    onClick = {
+                        expandedTopic = if (expandedTopic == topic) null else topic
+                    }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+
+            // Tasks
+            item { Header(title = stringResource(R.string.tasks)) }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+            if (tasks.isEmpty()) {
+                item {
+                    TextButton(onClick = { tasks.clear(); tasks.addAll(allTasks) }) {
+                        Text(stringResource(R.string.add_tasks))
+                    }
+                }
+            }
+            items(count = tasks.size) { i ->
+                val task = tasks.getOrNull(i)
+                if (task != null) {
+                    key(task) {
+                        TaskRow(
+                            task = task,
+                            onRemove = { tasks.remove(task) }
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -214,6 +288,64 @@ private fun Header(
         modifier = Modifier.semantics { heading() },
         style = MaterialTheme.typography.h5
     )
+}
+
+/**
+ * Shows a row for one topic.
+ *
+ * @param topic The topic title.
+ * @param expanded Whether the row should be shown expanded with the topic body.
+ * @param onClick Called when the row is clicked.
+ */
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun TopicRow(topic: String, expanded: Boolean, onClick: () -> Unit) {
+    TopicRowSpacer(visible = expanded)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth(),
+        elevation = 2.dp,
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                // This `Column` animates its size when its content changes.
+                .animateContentSize()
+        ) {
+            Row {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = topic,
+                    style = MaterialTheme.typography.body1
+                )
+            }
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.lorem_ipsum),
+                    textAlign = TextAlign.Justify
+                )
+            }
+        }
+    }
+    TopicRowSpacer(visible = expanded)
+}
+
+/**
+ * Shows a separator for topics.
+ */
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun TopicRowSpacer(visible: Boolean) {
+    AnimatedVisibility(visible = visible) {
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 }
 
 /**
@@ -344,5 +476,198 @@ private fun HomeTab(
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = title)
+    }
+}
+
+/**
+ * Shows the weather.
+ *
+ * @param onRefresh Called when the refresh icon button is clicked.
+ */
+@Composable
+private fun WeatherRow(
+    onRefresh: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .heightIn(min = 64.dp)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Amber600)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = stringResource(R.string.temperature), fontSize = 24.sp)
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onClick = onRefresh) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = stringResource(R.string.refresh)
+            )
+        }
+    }
+}
+
+/**
+ * Shows the loading state of the weather.
+ */
+@Composable
+private fun LoadingRow() {
+    // Creates an `InfiniteTransition` that runs infinite child animation values.
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        // `infiniteRepeatable` repeats the specified duration-based `AnimationSpec` infinitely.
+        animationSpec = infiniteRepeatable(
+            // The `keyframes` animates the value by specifying multiple timestamps.
+            animation = keyframes {
+                // One iteration is 1000 milliseconds.
+                durationMillis = 1000
+                // 0.7f at the middle of an iteration.
+                0.7f at 500
+            },
+            // When the value finishes animating from 0f to 1f, it repeats by reversing the
+            // animation direction.
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    Row(
+        modifier = Modifier
+            .heightIn(min = 64.dp)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray.copy(alpha = alpha))
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(32.dp)
+                .background(Color.LightGray.copy(alpha = alpha))
+        )
+    }
+}
+
+/**
+ * Shows a row for one task.
+ *
+ * @param task The task description.
+ * @param onRemove Called when the task is swiped away and removed.
+ */
+@Composable
+private fun TaskRow(task: String, onRemove: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .swipeToDismiss(onRemove),
+        elevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = task,
+                style = MaterialTheme.typography.body1
+            )
+        }
+    }
+}
+
+/**
+ * The modified element can be horizontally swiped away.
+ *
+ * @param onDismissed Called when the element is swiped to the edge of the screen.
+ */
+private fun Modifier.swipeToDismiss(
+    onDismissed: () -> Unit
+): Modifier = composed {
+    // This `Animatable` stores the horizontal offset for the element.
+    val offsetX = remember { Animatable(0f) }
+    pointerInput(Unit) {
+        // Used to calculate a settling position of a fling animation.
+        val decay = splineBasedDecay<Float>(this)
+        // Wrap in a coroutine scope to use suspend functions for touch events and animation.
+        coroutineScope {
+            while (true) {
+                // Wait for a touch down event.
+                val pointerId = awaitPointerEventScope { awaitFirstDown().id }
+                // Interrupt any ongoing animation.
+                offsetX.stop()
+                // Prepare for drag events and record velocity of a fling.
+                val velocityTracker = VelocityTracker()
+                // Wait for drag events.
+                awaitPointerEventScope {
+                    horizontalDrag(pointerId) { change ->
+                        // Record the position after offset
+                        val horizontalDragOffset = offsetX.value + change.positionChange().x
+                        launch {
+                            // Overwrite the `Animatable` value while the element is dragged.
+                            offsetX.snapTo(horizontalDragOffset)
+                        }
+                        // Record the velocity of the drag.
+                        velocityTracker.addPosition(change.uptimeMillis, change.position)
+                        // Consume the gesture event, not passed to external
+                        change.consumePositionChange()
+                    }
+                }
+                // Dragging finished. Calculate the velocity of the fling.
+                val velocity = velocityTracker.calculateVelocity().x
+                // Calculate where the element eventually settles after the fling animation.
+                val targetOffsetX = decay.calculateTargetValue(offsetX.value, velocity)
+                // The animation should end as soon as it reaches these bounds.
+                offsetX.updateBounds(
+                    lowerBound = -size.width.toFloat(),
+                    upperBound = size.width.toFloat()
+                )
+                launch {
+                    if (targetOffsetX.absoluteValue <= size.width) {
+                        // Not enough velocity; Slide back to the default position.
+                        offsetX.animateTo(targetValue = 0f, initialVelocity = velocity)
+                    } else {
+                        // Enough velocity to slide away the element to the edge.
+                        offsetX.animateDecay(velocity, decay)
+                        // The element was swiped away.
+                        onDismissed()
+                    }
+                }
+            }
+        }
+    }
+        // Apply the horizontal offset to the element.
+        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+}
+
+@Preview
+@Composable
+private fun PreviewHomeTabBar() {
+    HomeTabBar(
+        backgroundColor = Purple100,
+        tabPage = TabPage.Home,
+        onTabSelected = {}
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewHome() {
+    AnimationCodelabTheme {
+        Home()
     }
 }
