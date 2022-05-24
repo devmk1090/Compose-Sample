@@ -11,6 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.devkproject.accessibility.data.AppContainer
 import com.devkproject.accessibility.ui.MainDestinations.ARTICLE_ID_KEY
+import com.devkproject.accessibility.ui.article.ArticleScreen
+import com.devkproject.accessibility.ui.home.HomeScreen
+import com.devkproject.accessibility.ui.interests.InterestsScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -39,24 +42,24 @@ fun JetnewsNavGraph(
         startDestination = startDestination
     ) {
         composable(MainDestinations.HOME_ROUTE) {
-//            HomeScreen(
-//                postsRepository = appContainer.postsRepository,
-//                navigateToArticle = actions.navigateToArticle,
-//                openDrawer = openDrawer
-//            )
+            HomeScreen(
+                postsRepository = appContainer.postsRepository,
+                navigateToArticle = actions.navigateToArticle,
+                openDrawer = openDrawer
+            )
         }
         composable(MainDestinations.INTERESTS_ROUTE) {
-//            InterestsScreen(
-//                interestsRepository = appContainer.interestsRepository,
-//                openDrawer = openDrawer
-//            )
+            InterestsScreen(
+                interestsRepository = appContainer.interestsRepository,
+                openDrawer = openDrawer
+            )
         }
         composable("${MainDestinations.ARTICLE_ROUTE}/{$ARTICLE_ID_KEY}") { backStackEntry ->
-//            ArticleScreen(
-//                postId = backStackEntry.arguments?.getString(ARTICLE_ID_KEY),
-//                onBack = actions.upPress,
-//                postsRepository = appContainer.postsRepository
-//            )
+            ArticleScreen(
+                postId = backStackEntry.arguments?.getString(ARTICLE_ID_KEY),
+                onBack = actions.upPress,
+                postsRepository = appContainer.postsRepository
+            )
         }
     }
 }

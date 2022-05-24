@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+typealias TopicsMap = Map<String, List<String>>
+
 /**
  * Implementation of InterestRepository that returns a hardcoded list of
  * topics, people and publications synchronously.
