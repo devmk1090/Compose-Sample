@@ -11,11 +11,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import com.devkproject.accessibility.data.posts.PostsRepository
 import com.devkproject.accessibility.data.posts.post3
 import com.devkproject.accessibility.model.Post
+import com.devkproject.accessibility.R
 import com.devkproject.accessibility.ui.components.InsetAwareTopAppBar
 import com.devkproject.accessibility.ui.theme.JetnewsTheme
 import com.devkproject.accessibility.utils.supportWideScreen
@@ -74,7 +76,9 @@ fun ArticleScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(
+                                R.string.cd_navigate_up
+                            )
                         )
                     }
                 }
