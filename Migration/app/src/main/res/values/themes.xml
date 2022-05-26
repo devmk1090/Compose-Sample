@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- To see how these attributes are used, please visit https://material.io/develop/android/theming/color/ -->
+    <style name="Base.Theme.Sunflower" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/sunflower_green_500</item>
+        <item name="colorPrimaryVariant">@color/sunflower_green_700</item>
+        <item name="colorOnPrimary">@color/sunflower_black</item>
+        <item name="colorPrimaryDark">@color/sunflower_green_700</item>
+        <item name="colorAccent">?attr/colorPrimaryVariant</item>
+        <item name="colorSecondary">@color/sunflower_yellow_500</item>
+        <item name="colorOnSecondary">@color/sunflower_black</item>
+        <item name="android:colorBackground">@color/sunflower_green_500</item>
+
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:navigationBarColor">?colorOnSurface</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Sunflower" parent="Base.Theme.Sunflower"/>
+
+    <style name="Theme.Sunflower.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="TextAppearance.Sunflower.Toolbar.Text" parent="TextAppearance.MaterialComponents.Headline5" >
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+</resources>
