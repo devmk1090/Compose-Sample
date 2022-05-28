@@ -28,4 +28,5 @@
             android:name="plantId"
             app:argType="string" />
     </fragment>
+
 </navigation>
