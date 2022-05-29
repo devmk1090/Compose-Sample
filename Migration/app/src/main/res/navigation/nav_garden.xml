@@ -2,8 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/view_pager_fragment"
-    >
+    app:startDestination="@id/view_pager_fragment">
 
     <fragment
         android:id="@+id/view_pager_fragment"
@@ -21,7 +20,7 @@
 
     <fragment
         android:id="@+id/plant_detail_fragment"
-        android:name="com.devkproject.migration.PlantListFragment"
+        android:name="com.devkproject.migration.plantdetail.PlantDetailFragment"
         android:label="@string/plant_details_title"
         tools:layout="@layout/fragment_plant_detail">
         <argument
