@@ -93,7 +93,7 @@ class PlantDetailFragment : Fragment() {
             composeView.setContent {
                 //Compose world!
                 MaterialTheme {
-                    PlantDetailDescription()
+                    PlantDetailDescription(plantDetailViewModel)
                 }
             }
         }
