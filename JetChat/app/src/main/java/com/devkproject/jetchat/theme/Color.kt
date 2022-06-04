@@ -1,4 +1,4 @@
-package com.devkproject.jetchat.ui.theme
+package com.devkproject.jetchat.theme
 
 import androidx.compose.ui.graphics.Color
 
