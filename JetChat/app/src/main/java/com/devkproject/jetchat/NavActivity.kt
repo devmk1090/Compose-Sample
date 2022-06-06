@@ -9,9 +9,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
+import androidx.navigation.findNavController
+import com.devkproject.jetchat.components.JetchatScaffold
 import com.devkproject.jetchat.conversation.BackPressHandler
 import com.devkproject.jetchat.conversation.LocalBackPressedDispatcher
+import com.devkproject.jetchat.databinding.ContentMainBinding
 import kotlinx.coroutines.launch
 
 class NavActivity : AppCompatActivity() {
@@ -54,7 +59,24 @@ class NavActivity : AppCompatActivity() {
                             }
                         }
 
-                        
+                        JetchatScaffold(
+                            drawerState = drawerState,
+                            onChatClicked = {
+                                findNavController().popBackStack(R.id.nav_home, false)
+                                scope.launch {
+                                    drawerState.close()
+                                }
+                            },
+                            onProfileClicked = {
+                                val bundle = bundleOf("userId" to it)
+                                findNavController().navigate(R.id.nav_profile, bundle)
+                                scope.launch {
+                                    drawerState.close()
+                                }
+                            }
+                        ) {
+                            AndroidViewBinding(ContentMainBinding::inflate)
+                        }
                     }
                 }
             }

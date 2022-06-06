@@ -1,7 +1,9 @@
 package com.devkproject.jetchat.data
 
 import com.devkproject.jetchat.R
+import com.devkproject.jetchat.conversation.ConversationUiState
 import com.devkproject.jetchat.conversation.Message
+import com.devkproject.jetchat.profile.ProfileScreenState
 
 private val initialMessages = listOf(
     Message(
@@ -40,4 +42,40 @@ private val initialMessages = listOf(
                 "data and emit composable widgets?",
         "8:03 PM"
     )
+)
+
+val exampleUiState = ConversationUiState(
+    initialMessages = initialMessages,
+    channelName = "#composers",
+    channelMembers = 42
+)
+
+/**
+ * Example colleague profile
+ */
+val colleagueProfile = ProfileScreenState(
+    userId = "12345",
+    photo = R.drawable.someone_else,
+    name = "Taylor Brooks",
+    status = "Away",
+    displayName = "taylor",
+    position = "Senior Android Dev at Openlane",
+    twitter = "twitter.com/taylorbrookscodes",
+    timeZone = "12:25 AM local time (Eastern Daylight Time)",
+    commonChannels = "2"
+)
+
+/**
+ * Example "me" profile.
+ */
+val meProfile = ProfileScreenState(
+    userId = "me",
+    photo = R.drawable.android,
+    name = "Ali Conors",
+    status = "Online",
+    displayName = "aliconors",
+    position = "Senior Android Dev at Yearin\nGoogle Developer Expert",
+    twitter = "twitter.com/aliconors",
+    timeZone = "In your timezone",
+    commonChannels = null
 )
