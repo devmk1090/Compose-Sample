@@ -336,3 +336,11 @@ fun ConversationPreview() {
         )
     }
 }
+
+@Preview
+@Composable
+fun channelBarPrev() {
+    JetchatTheme {
+//        ChannelNameBar(channelName = "composers", channelMembers = 52)
+    }
+}
