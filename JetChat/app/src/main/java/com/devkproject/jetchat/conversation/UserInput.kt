@@ -14,6 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -23,6 +26,7 @@ import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -101,6 +105,54 @@ fun UserInput(
                 },
                 currentInputSelector = currentInputSelector
             )
+            SelectorExpanded(
+                onCloseRequested = dismissKeyboard,
+                onTextAdded = { textState = textState.addText(it) },
+                currentSelector = currentInputSelector
+            )
+        }
+    }
+}
+
+private fun TextFieldValue.addText(newString: String): TextFieldValue {
+    val newText = this.text.replaceRange(
+        this.selection.start,
+        this.selection.end,
+        newString
+    )
+    val newSelection = TextRange(
+        start = newText.length,
+        end = newText.length
+    )
+
+    return this.copy(text = newText, selection = newSelection)
+}
+
+@Composable
+private fun SelectorExpanded(
+    currentSelector: InputSelector,
+    onCloseRequested: () -> Unit,
+    onTextAdded: (String) -> Unit
+) {
+    if (currentSelector == InputSelector.NONE) return
+
+    // Request focus to force the TextField to lose it
+    val focusRequester = FocusRequester()
+    // If the selector is shown, always request focus to trigger a TextField.onFocusChange.
+    SideEffect {
+        if (currentSelector == InputSelector.EMOJI) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    Surface(tonalElevation = 8.dp) {
+        when (currentSelector) {
+            InputSelector.EMOJI -> EmojiSelector(onTextAdded, focusRequester)
+            InputSelector.DM -> NotAvailablePopup(onCloseRequested)
+            InputSelector.PICTURE -> FunctionalityNotAvailablePanel()
+            InputSelector.MAP -> FunctionalityNotAvailablePanel()
+            InputSelector.PHONE -> FunctionalityNotAvailablePanel()
+            else -> { throw NotImplementedError() }
         }
     }
 }
@@ -292,6 +344,31 @@ private fun UserInputText(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun EmojiSelector(
+    onTextAdded: (String) -> Unit,
+    focusRequester: FocusRequester
+) {
+    var selected by remember { mutableStateOf(EmojiStickerSelector.EMOJI) }
+
+    val a11yLabel = stringResource(id = R.string.emoji_selector_desc)
+    Column(
+        modifier = Modifier
+            .focusRequester(focusRequester) // Requests focus when the Emoji selector is displayed
+            // Make the emoji selector focusable so it can steal focus from TextField
+            .focusTarget()
+            .semantics { contentDescription = a11yLabel }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+        ) {
+
         }
     }
 }
