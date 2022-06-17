@@ -1,6 +1,7 @@
 package com.devkproject.jetchat.conversation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,15 +12,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -27,9 +27,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.devkproject.jetchat.FunctionalityNotAvailablePopup
 import com.devkproject.jetchat.R
 import com.devkproject.jetchat.data.exampleUiState
 import com.devkproject.jetchat.theme.JetchatTheme
+import kotlinx.coroutines.launch
 
 /**
  * Entry point for a conversation screen.
@@ -67,8 +69,39 @@ fun ConversationContent(
                     modifier = Modifier.weight(1f),
                     scrollState = scrollState
                 )
+                UserInput(
+                    onMessageSent = { content ->
+                        uiState.addMessage(
+                            Message(authorMe, content, timeNow)
+                        )
+                    },
+                    resetScroll = {
+                        scope.launch {
+                            scrollState.scrollToItem(0)
+                        }
+                    },
+                    // Use navigationBarsPadding() imePadding() and , to move the input panel above both the
+                    // navigation bar, and on-screen keyboard (IME)
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .imePadding(),
+                )
             }
         }
+    }
+}
+
+@Composable
+fun ChannelNameBar(
+    channelName: String,
+    channelMembers: Int,
+    modifier: Modifier = Modifier,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    onNavIconPressed: () -> Unit = { }
+) {
+    var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
+    if (functionalityNotAvailablePopupShown) {
+        FunctionalityNotAvailablePopup { functionalityNotAvailablePopupShown = false }
     }
 }
 
@@ -92,7 +125,7 @@ fun Messages(
             // below the status bar + app bar
             // TODO: Get height from somewhere
             contentPadding =
-                WindowInsets.statusBars.add(WindowInsets(top = 90.dp)).asPaddingValues(),
+            WindowInsets.statusBars.add(WindowInsets(top = 90.dp)).asPaddingValues(),
             modifier = Modifier
                 .testTag(ConversationTestTag)
                 .fillMaxSize()
@@ -126,6 +159,31 @@ fun Messages(
                 }
             }
         }
+        // Jump to bottom button shows up when user scrolls past a threshold.
+        // Convert to pixels:
+        val jumpThreshold = with(LocalDensity.current) {
+            JumpToBottomThreshold.toPx()
+        }
+
+        // Show the button if the first visible item is not the first one or if the offset is
+        // greater than the threshold.
+        val jumpToBottomButtonEnabled by remember {
+            derivedStateOf {
+                scrollState.firstVisibleItemIndex != 0 ||
+                        scrollState.firstVisibleItemScrollOffset > jumpThreshold
+            }
+        }
+
+        JumpToBottom(
+            // Only show if the scroller is not at the bottom
+            enabled = jumpToBottomButtonEnabled,
+            onClicked = {
+                scope.launch {
+                    scrollState.animateScrollToItem(0)
+                }
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -341,6 +399,16 @@ fun ConversationPreview() {
 @Composable
 fun channelBarPrev() {
     JetchatTheme {
-//        ChannelNameBar(channelName = "composers", channelMembers = 52)
+        ChannelNameBar(channelName = "composers", channelMembers = 52)
     }
 }
+
+@Preview
+@Composable
+fun DayHeaderPrev() {
+    DayHeader("Aug 6")
+}
+
+private val JumpToBottomThreshold = 56.dp
+
+private fun ScrollState.atBottom(): Boolean = value == 0
