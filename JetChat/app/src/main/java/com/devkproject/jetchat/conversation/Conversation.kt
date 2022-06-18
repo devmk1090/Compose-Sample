@@ -11,6 +11,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.devkproject.jetchat.FunctionalityNotAvailablePopup
 import com.devkproject.jetchat.R
+import com.devkproject.jetchat.components.JetchatAppBar
 import com.devkproject.jetchat.data.exampleUiState
 import com.devkproject.jetchat.theme.JetchatTheme
 import kotlinx.coroutines.launch
@@ -87,6 +91,15 @@ fun ConversationContent(
                         .imePadding(),
                 )
             }
+            // Channel name bar floats above the messages
+            ChannelNameBar(
+                channelName = uiState.channelName,
+                channelMembers = uiState.channelMembers,
+                onNavIconPressed = onNavIconPressed,
+                scrollBehavior = scrollBehavior,
+                // Use statusBarsPadding() to move the app bar content below the status bar
+                modifier = Modifier.statusBarsPadding(),
+            )
         }
     }
 }
@@ -103,6 +116,48 @@ fun ChannelNameBar(
     if (functionalityNotAvailablePopupShown) {
         FunctionalityNotAvailablePopup { functionalityNotAvailablePopupShown = false }
     }
+    JetchatAppBar(
+        modifier = modifier,
+        scrollBehavior = scrollBehavior,
+        onNavIconPressed = onNavIconPressed,
+        title = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                //Channel name
+                Text(
+                    text = channelName,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                // Number of members
+                Text(
+                    text = stringResource(R.string.members, channelMembers),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        actions = {
+            // Search icon
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clickable(onClick = { functionalityNotAvailablePopupShown = true })
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .height(24.dp),
+                contentDescription = stringResource(id = R.string.search)
+            )
+            // Info icon
+            Icon(
+                imageVector = Icons.Outlined.Info,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clickable(onClick = { functionalityNotAvailablePopupShown = true })
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .height(24.dp),
+                contentDescription = stringResource(id = R.string.info)
+            )
+        }
+    )
 }
 
 const val ConversationTestTag = "ConversationTestTag"
