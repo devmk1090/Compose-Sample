@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.devkproject.jetchat.FunctionalityNotAvailablePopup
 import com.devkproject.jetchat.R
 import com.devkproject.jetchat.components.JetchatAppBar
+import com.devkproject.jetchat.components.baselineHeight
 import com.devkproject.jetchat.data.colleagueProfile
 import com.devkproject.jetchat.data.meProfile
 import com.devkproject.jetchat.theme.JetchatTheme
@@ -72,11 +73,71 @@ fun ProfileScreen(userData: ProfileScreenState, onNavIconPressed: () -> Unit = {
                         userData,
                         this@BoxWithConstraints.maxHeight
                     )
-                    
+                    UserInfoFields(userData, this@BoxWithConstraints.maxHeight)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun UserInfoFields(userData: ProfileScreenState, containerHeight: Dp) {
+    Column {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        NameAndPosition(userData)
+
+        ProfileProperty(stringResource(R.string.display_name), userData.displayName)
+
+        ProfileProperty(stringResource(R.string.status), userData.status)
+
+        ProfileProperty(stringResource(R.string.twitter), userData.twitter, isLink = true)
+
+        userData.timeZone?.let {
+            ProfileProperty(stringResource(R.string.timezone), userData.timeZone)
+        }
+
+        // Add a spacer that always shows part (320.dp) of the fields list regardless of the device,
+        // in order to always leave some content at the top.
+        Spacer(Modifier.height((containerHeight - 320.dp).coerceAtLeast(0.dp)))
+    }
+}
+
+@Composable
+private fun NameAndPosition(
+    userData: ProfileScreenState
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Name(
+            userData,
+            modifier = Modifier.baselineHeight(32.dp)
+        )
+        Position(
+            userData,
+            modifier = Modifier
+                .padding(bottom = 20.dp)
+                .baselineHeight(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun Name(userData: ProfileScreenState, modifier: Modifier = Modifier) {
+    Text(
+        text = userData.name,
+        modifier = modifier,
+        style = MaterialTheme.typography.headlineSmall
+    )
+}
+
+@Composable
+private fun Position(userData: ProfileScreenState, modifier: Modifier = Modifier) {
+    Text(
+        text = userData.position,
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
 
 @Composable
@@ -103,6 +164,29 @@ private fun ProfileHeader(
             painter = painterResource(id = it),
             contentScale = ContentScale.Crop,
             contentDescription = null
+        )
+    }
+}
+
+@Composable
+fun ProfileProperty(label: String, value: String, isLink: Boolean = false) {
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+        Divider()
+        Text(
+            text = label,
+            modifier = Modifier.baselineHeight(24.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        val style = if (isLink) {
+            MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary)
+        } else {
+            MaterialTheme.typography.bodyLarge
+        }
+        Text(
+            text = value,
+            modifier = Modifier.baselineHeight(24.dp),
+            style = style
         )
     }
 }

@@ -70,7 +70,7 @@ val colleagueProfile = ProfileScreenState(
  */
 val meProfile = ProfileScreenState(
     userId = "me",
-    photo = R.drawable.android,
+    photo = R.drawable.polar,
     name = "Ali Conors",
     status = "Online",
     displayName = "aliconors",
