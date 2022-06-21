@@ -4,9 +4,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Create
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.devkproject.jetchat.FunctionalityNotAvailablePopup
 import com.devkproject.jetchat.R
+import com.devkproject.jetchat.components.AnimatingFabContent
 import com.devkproject.jetchat.components.JetchatAppBar
 import com.devkproject.jetchat.components.baselineHeight
 import com.devkproject.jetchat.data.colleagueProfile
@@ -76,6 +80,12 @@ fun ProfileScreen(userData: ProfileScreenState, onNavIconPressed: () -> Unit = {
                     UserInfoFields(userData, this@BoxWithConstraints.maxHeight)
                 }
             }
+            ProfileFab(
+                extended = scrollState.value == 0,
+                userIsMe = userData.isMe(),
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onFabClicked = { functionalityNotAvailablePopupShown = true }
+            )
         }
     }
 }
@@ -188,6 +198,50 @@ fun ProfileProperty(label: String, value: String, isLink: Boolean = false) {
             modifier = Modifier.baselineHeight(24.dp),
             style = style
         )
+    }
+}
+
+@Composable
+fun ProfileError() {
+    Text(stringResource(R.string.profile_error))
+}
+
+@Composable
+fun ProfileFab(
+    extended: Boolean,
+    userIsMe: Boolean,
+    modifier: Modifier = Modifier,
+    onFabClicked: () -> Unit = { }
+) {
+    key(userIsMe) {
+        FloatingActionButton(
+            onClick = onFabClicked,
+            modifier = modifier
+                .padding(16.dp)
+                .navigationBarsPadding()
+                .height(48.dp)
+                .widthIn(min = 48.dp),
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        ) {
+            AnimatingFabContent(
+                icon = {
+                    Icon(
+                        imageVector = if (userIsMe) Icons.Outlined.Create else Icons.Outlined.Chat,
+                        contentDescription = stringResource(
+                            if (userIsMe) R.string.edit_profile else R.string.message
+                        )
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(
+                            id = if (userIsMe) R.string.edit_profile else R.string.message
+                        ),
+                    )
+                },
+                extended = extended
+            )
+        }
     }
 }
 
