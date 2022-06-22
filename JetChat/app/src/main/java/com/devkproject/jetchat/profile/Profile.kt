@@ -268,3 +268,11 @@ fun ConvPreviewPortraitOtherDefault() {
         ProfileScreen(colleagueProfile)
     }
 }
+
+@Preview
+@Composable
+fun ProfileFabPreview() {
+    JetchatTheme {
+        ProfileFab(extended = true, userIsMe = false)
+    }
+}

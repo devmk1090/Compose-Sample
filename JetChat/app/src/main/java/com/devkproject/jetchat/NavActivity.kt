@@ -13,7 +13,6 @@ import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.devkproject.jetchat.components.JetchatScaffold
 import com.devkproject.jetchat.conversation.BackPressHandler
