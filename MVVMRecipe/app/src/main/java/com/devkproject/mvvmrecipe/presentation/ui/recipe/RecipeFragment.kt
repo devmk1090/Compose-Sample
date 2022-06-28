@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.devkproject.mvvmrecipe.presentation.BaseApplication
+import com.devkproject.mvvmrecipe.presentation.components.CircularIndeterminateProgressBar
+import com.devkproject.mvvmrecipe.presentation.components.DefaultSnackbar
+import com.devkproject.mvvmrecipe.presentation.components.LoadingRecipeShimmer
 import com.devkproject.mvvmrecipe.presentation.components.util.SnackbarController
 import com.devkproject.mvvmrecipe.presentation.theme.AppTheme
 import com.devkproject.mvvmrecipe.presentation.ui.recipe.RecipeEvent.GetRecipeEvent
@@ -71,7 +76,16 @@ class RecipeFragment : Fragment() {
                         Box(
                             modifier = Modifier.fillMaxSize()
                         ) {
+                            if (loading && recipe == null) LoadingRecipeShimmer(imageHeight = IMAGE_HEIGHT.dp)
 
+                            CircularIndeterminateProgressBar(isDisplayed = loading, verticalBias = 0.3f)
+                            DefaultSnackbar(
+                                snackbarHostState = scaffoldState.snackbarHostState,
+                                onDismiss = {
+                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                },
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            )
                         }
                     }
                 }
