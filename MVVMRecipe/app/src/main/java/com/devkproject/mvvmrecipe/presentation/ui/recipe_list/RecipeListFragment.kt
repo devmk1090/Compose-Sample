@@ -12,7 +12,10 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import com.devkproject.mvvmrecipe.R
 import com.devkproject.mvvmrecipe.presentation.BaseApplication
+import com.devkproject.mvvmrecipe.presentation.components.RecipeList
 import com.devkproject.mvvmrecipe.presentation.components.SearchAppBar
 import com.devkproject.mvvmrecipe.presentation.components.util.SnackbarController
 import com.devkproject.mvvmrecipe.presentation.theme.AppTheme
@@ -86,7 +89,18 @@ class RecipeListFragment : Fragment() {
                             scaffoldState.snackbarHostState
                         },
                     ) {
-
+                        RecipeList(
+                            loading = loading,
+                            recipes = recipes,
+                            onChangeScrollPosition = viewModel::onChangeRecipeScrollPosition,
+                            page = page,
+                            onTriggerNextPage = { viewModel.onTriggerEvent(RecipeListEvent.NextPageEvent) },
+                            onNavigateToRecipeDetailScreen = {
+                                val bundle = Bundle()
+                                bundle.putInt("recipeId", it)
+                                findNavController().navigate(R.id.viewRecipe, bundle)
+                            }
+                        )
                     }
                 }
             }

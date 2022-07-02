@@ -4,5 +4,13 @@
     android:id="@+id/main_graph"
     >
 
+    <fragment
+        android:id="@+id/recipeListFragment"
+        android:name="com.devkproject.mvvmrecipe.presentation.ui.recipe_list.RecipeListFragment"
+        android:label="RecipeListFragment">
+        <action
+            android:id="@+id/viewRecipe"
+            app:destination="@id/recipeListFragment" />
+    </fragment>
 
 </navigation>
