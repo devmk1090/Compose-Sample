@@ -13,4 +13,9 @@
             app:destination="@id/recipeListFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/recipeFragment"
+        android:name="com.devkproject.mvvmrecipe.presentation.ui.recipe.RecipeFragment"
+        android:label="RecipeFragment">
+    </fragment>
 </navigation>

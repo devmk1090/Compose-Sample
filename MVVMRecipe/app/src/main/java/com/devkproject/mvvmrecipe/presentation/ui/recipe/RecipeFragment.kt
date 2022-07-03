@@ -20,11 +20,13 @@ import com.devkproject.mvvmrecipe.presentation.BaseApplication
 import com.devkproject.mvvmrecipe.presentation.components.CircularIndeterminateProgressBar
 import com.devkproject.mvvmrecipe.presentation.components.DefaultSnackbar
 import com.devkproject.mvvmrecipe.presentation.components.LoadingRecipeShimmer
+import com.devkproject.mvvmrecipe.presentation.components.RecipeView
 import com.devkproject.mvvmrecipe.presentation.components.util.SnackbarController
 import com.devkproject.mvvmrecipe.presentation.theme.AppTheme
 import com.devkproject.mvvmrecipe.presentation.ui.recipe.RecipeEvent.GetRecipeEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 const val IMAGE_HEIGHT = 260
@@ -77,6 +79,20 @@ class RecipeFragment : Fragment() {
                             modifier = Modifier.fillMaxSize()
                         ) {
                             if (loading && recipe == null) LoadingRecipeShimmer(imageHeight = IMAGE_HEIGHT.dp)
+                            else recipe?.let {
+                                if (it.id == 1) //force an error to demo snackbar
+                                    snackbarController.getScope().launch {
+                                        snackbarController.showSnackbar(
+                                            scaffoldState = scaffoldState,
+                                            message = "An error occurred with this recipe",
+                                            actionLabel = "Ok"
+                                        )
+                                    } else {
+                                        RecipeView(
+                                            recipe = it
+                                        )
+                                }
+                            }
 
                             CircularIndeterminateProgressBar(isDisplayed = loading, verticalBias = 0.3f)
                             DefaultSnackbar(
