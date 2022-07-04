@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.devkproject.mvvmrecipe.domain.Recipe
+import com.devkproject.mvvmrecipe.domain.model.Recipe
 import com.devkproject.mvvmrecipe.util.DEFAULT_RECIPE_IMAGE
 import com.devkproject.mvvmrecipe.util.loadPicture
 import kotlinx.coroutines.ExperimentalCoroutinesApi

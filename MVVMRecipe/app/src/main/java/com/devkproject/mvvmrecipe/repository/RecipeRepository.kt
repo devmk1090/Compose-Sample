@@ -1,6 +1,6 @@
 package com.devkproject.mvvmrecipe.repository
 
-import com.devkproject.mvvmrecipe.domain.Recipe
+import com.devkproject.mvvmrecipe.domain.model.Recipe
 
 interface RecipeRepository {
 

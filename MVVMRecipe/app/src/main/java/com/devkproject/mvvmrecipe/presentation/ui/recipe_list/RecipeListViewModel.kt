@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.devkproject.mvvmrecipe.domain.Recipe
+import com.devkproject.mvvmrecipe.domain.model.Recipe
 import com.devkproject.mvvmrecipe.presentation.ui.recipe_list.RecipeListEvent.*
 import com.devkproject.mvvmrecipe.repository.RecipeRepository
 import com.devkproject.mvvmrecipe.util.TAG

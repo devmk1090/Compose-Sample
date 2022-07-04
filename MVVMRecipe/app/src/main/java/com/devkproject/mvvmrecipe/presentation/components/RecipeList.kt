@@ -8,7 +8,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.devkproject.mvvmrecipe.domain.Recipe
+import com.devkproject.mvvmrecipe.domain.model.Recipe
 import com.devkproject.mvvmrecipe.presentation.ui.recipe_list.PAGE_SIZE
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 

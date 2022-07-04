@@ -1,4 +1,4 @@
-package com.devkproject.mvvmrecipe.domain
+package com.devkproject.mvvmrecipe.domain.model
 
 data class Recipe(
     val id: Int,
