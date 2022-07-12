@@ -1,4 +1,4 @@
-package com.devkproject.survey.welcome
+package com.devkproject.survey.signinsignup
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

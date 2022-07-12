@@ -1,4 +1,4 @@
-package com.devkproject.survey.welcome
+package com.devkproject.survey.signinsignup
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -6,9 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,6 +109,36 @@ private fun SignInCreateAccount(
     modifier: Modifier = Modifier
 ) {
     val emailState = remember { EmailState() }
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+            Text(
+                text = stringResource(id = R.string.sign_in_create_account),
+                style = MaterialTheme.typography.subtitle2,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 64.dp, bottom = 12.dp)
+            )
+        }
+        val onSubmit = {
+            if (emailState.isValid) {
+                onEvent(WelcomeEvent.SignInSignUp(emailState.text))
+            } else {
+                emailState.enableShowErrors()
+            }
+        }
+        onFocusChange(emailState.isFocused)
+        //Email()
+        Button(
+            onClick = onSubmit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 28.dp, bottom = 3.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.user_continue),
+                style = MaterialTheme.typography.subtitle2
+            )
+        }
+    }
 }
 
 @Preview(name = "Welcome light theme")

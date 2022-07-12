@@ -1,4 +1,4 @@
-package com.devkproject.survey.welcome
+package com.devkproject.survey.signinsignup
 
 import android.os.Bundle
 import android.view.LayoutInflater

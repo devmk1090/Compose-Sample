@@ -6,7 +6,7 @@
     app:startDestination="@+id/welcome_fragment">
     <fragment
         android:id="@+id/welcome_fragment"
-        android:name="com.devkproject.survey.welcome.WelcomeFragment"
+        android:name="com.devkproject.survey.signinsignup.WelcomeFragment"
         android:label="Welcome">
     </fragment>
 

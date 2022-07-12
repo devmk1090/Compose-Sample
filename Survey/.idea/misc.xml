@@ -4,7 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndroidStudioProjects/Compose-Sample/Survey/app/src/main/res/drawable/ic_logo_dark.xml" value="0.137" />
+        <entry key="..\:/AndroidStudioProjects/Compose-Sample/Survey/app/src/main/res/drawable/ic_logo_light.xml" value="0.137" />
         <entry key="..\:/AndroidStudioProjects/Compose-Sample/Survey/app/src/main/res/layout/activity_main.xml" value="0.190234375" />
+        <entry key="..\:/AndroidStudioProjects/Compose-Sample/Survey/app/src/main/res/layout/content_main.xml" value="0.189453125" />
       </map>
     </option>
   </component>
