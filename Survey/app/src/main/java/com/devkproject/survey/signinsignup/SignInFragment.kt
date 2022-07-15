@@ -7,17 +7,17 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.devkproject.survey.R
 import com.devkproject.survey.Screen
 import com.devkproject.survey.navigate
 import com.devkproject.survey.theme.JetsurveyTheme
+import com.devkproject.survey.R
 
 /**
- * Fragment containing the sign up UI
+ * Fragment containing the sign in UI.
  */
-class SignUpFragment : Fragment() {
+class SignInFragment: Fragment() {
 
-    private val viewModel: SignUpViewModel by viewModels { SignUpViewModelFactory() }
+    private val viewModel: SignInViewModel by viewModels { SignInViewModelFactory() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,13 +26,12 @@ class SignUpFragment : Fragment() {
     ): View? {
         viewModel.navigateTo.observe(viewLifecycleOwner) { navigateToEvent ->
             navigateToEvent.getContentIfNotHandled()?.let { navigateTo ->
-                navigate(navigateTo, Screen.SignUp)
+                navigate(navigateTo, Screen.SignIn)
             }
         }
-
         return ComposeView(requireContext()).apply {
             // In order for savedState to work, the same ID needs to be used for all instances.
-            id = R.id.sign_up_fragment
+            id = R.id.sign_in_fragment
 
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -40,19 +39,19 @@ class SignUpFragment : Fragment() {
             )
             setContent {
                 JetsurveyTheme {
-                    SignUp(
+                    SignIn(
                         onNavigationEvent = { event ->
                             when (event) {
-                                is SignUpEvent.SignUp -> {
-                                    viewModel.signUp(event.email, event.password)
+                                is SignInEvent.SignIn -> {
+                                    viewModel.signIn(event.email, event.password)
                                 }
-                                SignUpEvent.SignIn -> {
-                                    viewModel.signIn()
+                                SignInEvent.SignUp -> {
+                                    viewModel.signUp()
                                 }
-                                SignUpEvent.SignInAsGuest -> {
+                                SignInEvent.SignInAsGuest -> {
                                     viewModel.signInAsGuest()
                                 }
-                                SignUpEvent.NavigateBack -> {
+                                SignInEvent.NavigateBack -> {
                                     activity?.onBackPressedDispatcher?.onBackPressed()
                                 }
                             }

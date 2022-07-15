@@ -6,7 +6,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,7 +71,7 @@ fun SignInSignUpTopAppBar(topAppBarText: String, onBackPressed: () -> Unit) {
         navigationIcon = {
             IconButton(onClick = onBackPressed) {
                 Icon(
-                    imageVector = Icons.Filled.CheckCircle,
+                    imageVector = Icons.Filled.ChevronLeft,
                     contentDescription = stringResource(id = R.string.back)
                 )
             }
@@ -153,8 +157,38 @@ fun Password(
                 )
             }
         },
-
+        trailingIcon = {
+            if (showPassword.value) {
+                IconButton(onClick = { showPassword.value = false }) {
+                    Icon(
+                        imageVector = Icons.Filled.Visibility,
+                        contentDescription = stringResource(id = R.string.hide_password)
+                    )
+                }
+            } else {
+                IconButton(onClick = { showPassword.value = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.VisibilityOff,
+                        contentDescription = stringResource(id = R.string.show_password)
+                    )
+                }
+            }
+        },
+        visualTransformation = if (showPassword.value) {
+            VisualTransformation.None
+        } else {
+            PasswordVisualTransformation()
+        },
+        isError = passwordState.showErrors(),
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                onImeAction()
+            }
+        )
     )
+
+    passwordState.getError()?.let { error -> TextFieldError(textError = error) }
 }
 
 /**
