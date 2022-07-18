@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 
 const val simpleDataFormatPattern = "EEE, MMM d"
 
-class SurveyViewModel : ViewModel() {
+class SurveyViewModel(
+
+) : ViewModel() {
 
 }
