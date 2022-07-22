@@ -79,6 +79,41 @@ class SurveyViewModel(
     fun doNotAskForPermissions() {
         askForPermissions = false
     }
+
+    private fun updateStateWithActionResult(questionId: Int, result: SurveyActionResult) {
+        val latestState = _uiState.value
+        if (latestState != null && latestState is SurveyState.Questions) {
+            val question =
+                latestState.questionsState.first { questionState ->
+                    questionState.question.id == questionId
+                }
+            question.answer = Answer.Action(result)
+            question.enableNext = true
+        }
+    }
+
+    private fun getLatestQuestionId(): Int? {
+        val latestState = _uiState.value
+        if (latestState != null && latestState is SurveyState.Questions) {
+            return latestState.questionsState[latestState.currentQuestionIndex].question.id
+        }
+        return null
+    }
+
+    private fun getSelectedDate(questionId: Int): Long {
+        val latestState = _uiState.value
+        if (latestState != null && latestState is SurveyState.Questions) {
+            val question =
+                latestState.questionsState.first { questionState ->
+                    questionState.question.id == questionId
+                }
+            val answer = question.answer as Answer.Action?
+            if (answer != null && answer.result is SurveyActionResult.Date) {
+                return answer.result.dateMillis
+            }
+        }
+        return getDefaultDateInMillis()
+    }
 }
 
 class SurveyViewModelFactory(
