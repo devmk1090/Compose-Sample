@@ -38,7 +38,7 @@ class SurveyFragment : Fragment() {
             )
             setContent {
                 JetsurveyTheme {
-                    v
+
                 }
             }
         }
