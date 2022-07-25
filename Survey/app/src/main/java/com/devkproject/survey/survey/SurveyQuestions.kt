@@ -2,22 +2,34 @@ package com.devkproject.survey.survey
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.devkproject.survey.R
 import com.devkproject.survey.theme.JetsurveyTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -100,6 +112,53 @@ private fun QuestionContent(
                 }
             }
             when (question.answer) {
+                is PossibleAnswer.SingleChoice -> SingleChoiceQuestion(
+                    possibleAnswer = question.answer,
+                    answer = answer as Answer.SingleChoice?,
+                    onAnswerSelected = { answer -> onAnswer(Answer.SingleChoice(answer)) },
+                    modifier = Modifier.fillParentMaxWidth()
+                )
+                is PossibleAnswer.SingleChoiceIcon -> SingleChoiceIconQuestion(
+                    possibleAnswer = question.answer,
+                    answer = answer as Answer.SingleChoice?,
+                    onAnswerSelected = { answer -> onAnswer(Answer.SingleChoice(answer)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                is PossibleAnswer.MultipleChoice -> MultipleChoiceQuestion(
+                    possibleAnswer = question.answer,
+                    answer = answer as Answer.MultipleChoice?,
+                    onAnswerSelected = { newAnswer, selected ->
+                        // create the answer if it doesn't exist or
+                        // update it based on the user's selection
+                        if (answer == null) {
+                            onAnswer(Answer.MultipleChoice(setOf(newAnswer)))
+                        } else {
+                            onAnswer(answer.withAnswerSelected(newAnswer, selected))
+                        }
+                    },
+                    modifier = Modifier.fillParentMaxWidth()
+                )
+                is PossibleAnswer.MultipleChoiceIcon -> MultipleChoiceIconQuestion(
+                    possibleAnswer = question.answer,
+                    answer = answer as Answer.MultipleChoice?,
+                    onAnswerSelected = { newAnswer, selected ->
+                        // create the answer if it doesn't exist or
+                        // update it based on the user's selection
+                        if (answer == null) {
+                            onAnswer(Answer.MultipleChoice(setOf(newAnswer)))
+                        } else {
+                            onAnswer(answer.withAnswerSelected(newAnswer, selected))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                is PossibleAnswer.Action -> ActionQuestion(
+                    questionId = question.id,
+                    possibleAnswer = question.answer,
+                    answer = answer as Answer.Action,
+                    onAction = onAction,
+                    modifier = Modifier.fillParentMaxWidth()
+                )
 
             }
         }
@@ -206,6 +265,309 @@ private fun SingleChoiceQuestion(
     }
 }
 
+@Composable
+private fun SingleChoiceIconQuestion(
+    possibleAnswer: PossibleAnswer.SingleChoiceIcon,
+    answer: Answer.SingleChoice?,
+    onAnswerSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val options = possibleAnswer.optionsStringIconRes.associateBy { stringResource(id = it.second) }
+
+    val radioOptions = options.keys.toList()
+
+    val selected = if (answer != null) {
+        stringResource(id = answer.answer)
+    } else {
+        null
+    }
+
+    val (selectedOption, onOptionSelected) = remember(answer) { mutableStateOf(selected) }
+
+    Column(modifier = modifier) {
+        radioOptions.forEach { text ->
+            val onClickHandle = {
+                onOptionSelected(text)
+                options[text]?.let { onAnswerSelected(it.second) }
+                Unit
+            }
+            val optionSelected = text == selectedOption
+            val answerBorderColor = if (optionSelected) {
+                MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            } else {
+                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+            }
+            val answerBackgroundColor = if (optionSelected) {
+                MaterialTheme.colors.primary.copy(alpha = 0.12f)
+            } else {
+                MaterialTheme.colors.background
+            }
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = answerBorderColor
+                ),
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = optionSelected,
+                            onClick = onClickHandle
+                        )
+                        .background(answerBackgroundColor)
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    options[text]?.let {
+                        Image(
+                            painter = painterResource(
+                                id = it.first
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(56.dp)
+                                .height(56.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                        )
+                    }
+                    Text(
+                        text = text
+                    )
+
+                    RadioButton(
+                        selected = optionSelected,
+                        onClick = onClickHandle,
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colors.primary
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultipleChoiceQuestion(
+    possibleAnswer: PossibleAnswer.MultipleChoice,
+    answer: Answer.MultipleChoice?,
+    onAnswerSelected: (Int, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val options = possibleAnswer.optionsStringRes.associateBy { stringResource(id = it) }
+    Column(modifier = modifier) {
+        for (option in options) {
+            var checkedState by remember(answer) {
+                val selectedOption = answer?.answersStringRes?.contains(option.value)
+                mutableStateOf(selectedOption ?: false)
+            }
+            val answerBorderColor = if (checkedState) {
+                MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            } else {
+                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+            }
+            val answerBackgroundColor = if (checkedState) {
+                MaterialTheme.colors.primary.copy(alpha = 0.12f)
+            } else {
+                MaterialTheme.colors.background
+            }
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = answerBorderColor
+                ),
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(answerBackgroundColor)
+                        .clickable(
+                            onClick = {
+                                checkedState = !checkedState
+                                onAnswerSelected(option.value, checkedState)
+                            }
+                        )
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = option.key)
+
+                    Checkbox(
+                        checked = checkedState,
+                        onCheckedChange = { selected ->
+                            checkedState = selected
+                            onAnswerSelected(option.value, selected)
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colors.primary
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultipleChoiceIconQuestion(
+    possibleAnswer: PossibleAnswer.MultipleChoiceIcon,
+    answer: Answer.MultipleChoice?,
+    onAnswerSelected: (Int, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val options = possibleAnswer.optionsStringIconRes.associateBy { stringResource(id = it.second) }
+    Column(modifier = modifier) {
+        for (option in options) {
+            var checkedState by remember(answer) {
+                val selectedOption = answer?.answersStringRes?.contains(option.value.second)
+                mutableStateOf(selectedOption ?: false)
+            }
+            val answerBorderColor = if (checkedState) {
+                MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            } else {
+                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+            }
+            val answerBackgroundColor = if (checkedState) {
+                MaterialTheme.colors.primary.copy(alpha = 0.12f)
+            } else {
+                MaterialTheme.colors.background
+            }
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = answerBorderColor
+                ),
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            onClick = {
+                                checkedState = !checkedState
+                                onAnswerSelected(option.value.second, checkedState)
+                            }
+                        )
+                        .background(answerBackgroundColor)
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Image(
+                        painter = painterResource(id = option.value.first),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(56.dp)
+                            .height(56.dp)
+                            .clip(MaterialTheme.shapes.medium)
+                    )
+                    Text(text = option.key)
+
+                    Checkbox(
+                        checked = checkedState,
+                        onCheckedChange = { selected ->
+                            checkedState = selected
+                            onAnswerSelected(option.value.second, selected)
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colors.primary
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionQuestion(
+    questionId: Int,
+    possibleAnswer: PossibleAnswer.Action,
+    answer: Answer.Action?,
+    onAction: (Int, SurveyActionType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    when (possibleAnswer.actionType) {
+        SurveyActionType.PICK_DATE -> {
+            DateQuestion(
+                questionId = questionId,
+                answer = answer,
+                onAction = onAction,
+                modifier = modifier
+            )
+        }
+        SurveyActionType.TAKE_PHOTO -> {
+
+        }
+        SurveyActionType.SELECT_CONTACT -> TODO()
+    }
+}
+
+@Composable
+private fun PhotoQuestion(
+    questionId: Int,
+    answer: Answer.Action?,
+    onAction: (Int, SurveyActionType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val resource = if (answer != null) {
+        Icons.Filled.SwapHoriz
+    } else {
+        Icons.Filled.AddAPhoto
+    }
+    OutlinedButton(
+        onClick = { onAction(questionId, SurveyActionType.TAKE_PHOTO) },
+        modifier = modifier,
+        contentPadding = PaddingValues()
+    ) {
+        Column {
+            if (answer != null && answer.result is SurveyActionResult.Photo) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(answer.result.uri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(96.dp)
+                        .aspectRatio(4 / 3f)
+                )
+            } else {
+                PhotoDefaultImage(modifier = Modifier.padding(horizontal = 86.dp, vertical = 74.dp))
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.BottomCenter)
+                    .padding(vertical = 26.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = resource, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(
+                        id = if (answer != null) {
+                            R.string.retake_photo
+                        } else {
+                            R.string.add_photo
+                        }
+                    )
+                )
+            }
+        }
+    }
+}
+
 /**
  * Returns the start of today in milliseconds
  */
@@ -217,6 +579,70 @@ fun getDefaultDateInMillis(): Long {
     cal.clear()
     cal.set(year, month, date)
     return cal.timeInMillis
+}
+
+@Composable
+private fun DateQuestion(
+    questionId: Int,
+    answer: Answer.Action?,
+    onAction: (Int, SurveyActionType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val timestamp = if (answer != null && answer.result is SurveyActionResult.Date) {
+        answer.result.dateMillis
+    } else {
+        getDefaultDateInMillis()
+    }
+
+    // All times are stored in UTC, so generate the display from UTC also
+    val dateFormat = SimpleDateFormat(simpleDataFormatPattern, Locale.getDefault())
+    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val dateString = dateFormat.format(timestamp)
+
+    Button(
+        onClick = { onAction(questionId, SurveyActionType.PICK_DATE) },
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.colors.onPrimary,
+            contentColor = MaterialTheme.colors.onSecondary
+        ),
+        shape = MaterialTheme.shapes.small,
+        modifier = modifier
+            .padding(vertical = 20.dp)
+            .height(54.dp),
+        elevation = ButtonDefaults.elevation(0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
+    ) {
+        Text(
+            text = dateString,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1.8f)
+        )
+        Icon(
+            imageVector = Icons.Filled.ArrowDropDown,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.2f)
+        )
+    }
+}
+
+@Composable
+private fun PhotoDefaultImage(
+    modifier: Modifier = Modifier,
+    lightTheme: Boolean = MaterialTheme.colors.isLight
+) {
+    val assetId = if (lightTheme) {
+        R.drawable.ic_selfie_light
+    } else {
+        R.drawable.ic_selfie_dark
+    }
+    Image(
+        painter = painterResource(id = assetId),
+        modifier = modifier,
+        contentDescription = null
+    )
 }
 
 @Preview
