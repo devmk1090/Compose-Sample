@@ -1,10 +1,7 @@
 package com.devkproject.survey.survey
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -45,10 +42,33 @@ fun SurveyQuestionScreen(
                     onBackPressed = onBackPressed
                 )
             },
-
-        ) {
-
-        }
+            content = { innerPadding ->
+                Question(
+                    question = questionState.question,
+                    answer = questionState.answer,
+                    shouldAskPermissions = shouldAskPermissions,
+                    onAnswer = {
+                        if (it !is Answer.PermissionsDenied) {
+                            questionState.answer = it
+                        }
+                        questionState.enableNext = true
+                    },
+                    onAction = onAction,
+                    onDoNotAskForPermissions = onDoNotAskForPermissions,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                )
+            },
+            bottomBar = {
+                SurveyBottomBar(
+                    questionState = questionState,
+                    onPreviousPressed = { questions.currentQuestionIndex-- },
+                    onNextPressed = { questions.currentQuestionIndex++ },
+                    onDonePressed = onDonePressed
+                )
+            }
+        )
     }
 }
 
@@ -119,5 +139,57 @@ private fun SurveyTopAppBar(
                 .padding(horizontal = 20.dp),
             backgroundColor = MaterialTheme.colors.progressIndicatorBackground
         )
+    }
+}
+
+@Composable
+private fun SurveyBottomBar(
+    questionState: QuestionState,
+    onPreviousPressed: () -> Unit,
+    onNextPressed: () -> Unit,
+    onDonePressed: () -> Unit
+) {
+    Surface(
+        elevation = 7.dp,
+        modifier = Modifier.fillMaxWidth() // .border(1.dp, MaterialTheme.colors.primary)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            if (questionState.showPrevious) {
+                OutlinedButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    onClick = onPreviousPressed
+                ) {
+                    Text(text = stringResource(id = R.string.previous))
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+            if (questionState.showDone) {
+                Button(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    onClick = onDonePressed,
+                    enabled = questionState.enableNext
+                ) {
+                    Text(text = stringResource(id = R.string.done))
+                }
+            } else {
+                Button(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    onClick = onNextPressed,
+                    enabled = questionState.enableNext
+                ) {
+                    Text(text = stringResource(id = R.string.next))
+                }
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts.TakePicture
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -38,9 +39,28 @@ class SurveyFragment : Fragment() {
             )
             setContent {
                 JetsurveyTheme {
-
+                    viewModel.uiState.observeAsState().value?.let { surveyState ->
+                        when (surveyState) {
+                            is SurveyState.Questions -> SurveyQuestionScreen(
+                                questions = surveyState,
+                                shouldAskPermissions = viewModel.askForPermissions,
+                                onAction = { id, action -> handleSurveyAction(id, action) },
+                                onDoNotAskForPermissions = { viewModel.doNotAskForPermissions() },
+                                onDonePressed = { viewModel.computeResult(surveyState) },
+                                onBackPressed = {
+                                    activity?.onBackPressedDispatcher?.onBackPressed()
+                                }
+                            )
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private fun handleSurveyAction(questionId: Int, actionType: SurveyActionType) {
+        when (actionType) {
+
         }
     }
 }
