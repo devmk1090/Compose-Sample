@@ -1,4 +1,4 @@
-package com.devkproject.survey.repository
+package com.devkproject.survey.signinsignup
 
 import androidx.compose.runtime.Immutable
 

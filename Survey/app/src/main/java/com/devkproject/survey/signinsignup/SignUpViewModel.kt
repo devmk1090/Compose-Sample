@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.devkproject.survey.Screen
 import com.devkproject.survey.Screen.SignIn
 import com.devkproject.survey.Screen.Survey
-import com.devkproject.survey.repository.UserRepository
 import com.devkproject.survey.util.Event
 
 class SignUpViewModel(private val userRepository: UserRepository) : ViewModel() {

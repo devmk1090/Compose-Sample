@@ -9,5 +9,19 @@
         android:name="com.devkproject.survey.signinsignup.WelcomeFragment"
         android:label="Welcome">
     </fragment>
-
+    <fragment
+        android:id="@+id/sign_in_fragment"
+        android:name="com.devkproject.survey.signinsignup.SignInFragment"
+        android:label="Sign in">
+    </fragment>
+    <fragment
+        android:id="@+id/sign_up_fragment"
+        android:name="com.devkproject.survey.signinsignup.SignUpFragment"
+        android:label="Sign up">
+    </fragment>
+    <fragment
+        android:id="@+id/survey_fragment"
+        android:name="com.devkproject.survey.survey.SurveyFragment"
+        android:label="Survey">
+    </fragment>
 </navigation>

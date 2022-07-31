@@ -8,7 +8,6 @@ import com.devkproject.survey.Screen
 import com.devkproject.survey.Screen.SignIn
 import com.devkproject.survey.Screen.SignUp
 import com.devkproject.survey.Screen.Survey
-import com.devkproject.survey.repository.UserRepository
 import com.devkproject.survey.util.Event
 
 class WelcomeViewModel(private val userRepository: UserRepository) : ViewModel() {
